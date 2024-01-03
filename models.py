@@ -13,9 +13,16 @@ class Process:
         self.at = at
         self.cbt = cbt
         self.visited = False
+        self.start_time = None
+        self.end_time = None
+        self.waiting_time = None
+        self.total_time = None
 
     def set_times(self, start_time, end_time, waiting_time, total_time):
         self.start_time = start_time
         self.end_time = end_time
         self.waiting_time = waiting_time
         self.total_time = total_time
+
+    def __repr__(self) -> str:
+        return f"<P: {self.name}, st: {self.start_time}, end: {self.end_time}>"
