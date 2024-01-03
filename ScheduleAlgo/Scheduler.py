@@ -118,4 +118,6 @@ class Scheduler:
             plt.scatter(p.at, p.name, color='red', marker='x', )
             plt.plot([p.start_time, p.end_time], [p.name, p.name])
 
+        msg = f"Average Waiting Time: '{self.avg_waiting_time}' and  Average Total Time: '{self.avg_total_time}'"
+        plt.figtext(0.5, 0.01, msg, wrap=True, horizontalalignment='center', fontsize=12)
         plt.show()
