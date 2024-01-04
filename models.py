@@ -24,5 +24,8 @@ class Process:
         self.waiting_time = waiting_time
         self.total_time = total_time
 
+    def set_rpr(self, rpr: float):
+        self.rpr = rpr
+
     def __repr__(self) -> str:
         return f"<P: {self.name}, st: {self.start_time}, end: {self.end_time}>"

@@ -60,7 +60,27 @@ class Scheduler:
             t = p.end_time
 
     def __hrrn(self):
-        pass
+        last_p: Process = None
+        t = 0
+        while self.__check_if_any_remain():
+            ps = self.__find_all_process_with_atleaset_t_at(t)
+            if len(ps) == 0:
+                t += 1
+                continue
+
+            self.__calculate_rpr(ps, t)
+            ps = sorted(ps, key=lambda k: k.rpr, reverse=True)
+            p = ps[0]
+            if last_p is None: start = p.at
+            else: start = last_p.end_time
+            end = start + p.cbt
+            wait_t = start - p.at
+            total_t = end - p.at
+
+            p.set_times(start, end, wait_t, total_t)
+            p.visited = True
+            last_p = p
+            t = p.end_time
 
     def __get_min_at_process(self) -> Process:
         value = 1000000000000000
@@ -101,6 +121,12 @@ class Scheduler:
                 return True
 
         return False
+
+    def __calculate_rpr(self, ps: list[Process], t: int):
+        for p in ps:
+            wt = t - p.at
+            current_rpr = float(wt) / float(p.cbt)
+            p.set_rpr(current_rpr)
 
     def __debug(self):
         for p in self.processes:
