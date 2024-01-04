@@ -1,15 +1,18 @@
 import matplotlib.pyplot as plt
 
+from collections import deque
+
 from models import Algo, Process
 
 
 class Scheduler:
-    def __init__(self, algo: Algo, processes: list[Process]) -> None:
+    def __init__(self, algo: Algo, processes: list[Process], qunt: int = 10) -> None:
         self.algo = algo
         self.processes = processes
         self.N = len(processes)
         self.avg_waiting_time = 0
         self.avg_total_time = 0
+        self.qunt = qunt
 
     def calculate(self):
         match self.algo:
@@ -19,9 +22,12 @@ class Scheduler:
                 self.__spn()
             case Algo.hrrn:
                 self.__hrrn()
+            case Algo.rr:
+                self.__rr()
 
         self.__caluclate_avg()
-        self.__make_plot()
+        if self.algo == Algo.rr: self.__make_pr_plot()
+        else: self.__make_plot()
 
     def __fcfs(self):
         last_p: Process = None
@@ -82,6 +88,41 @@ class Scheduler:
             last_p = p
             t = p.end_time
 
+    def __rr(self):
+        for p in self.processes:
+            p.make_rr_process()
+
+        t = 0
+        ps: deque = deque(self.__find_all_process_with_atleaset_t_at(t))
+        ps = deque(sorted(ps, key=lambda k: k.at, reverse=True))
+        while self.__check_if_any_remain():
+            ps = self.__update_if_any_new(ps, t)
+            if len(ps) == 0:
+                t += 1
+                continue
+
+            p: Process = ps.pop()
+
+            if p.cbt <= self.qunt:
+                p.start_time.append(t)
+                p.end_time.append(t + p.cbt)
+                wait_t = p.start_time[0] - p.at
+                total_t = p.end_time[-1] - p.at
+                p.waiting_time = wait_t
+                p.total_time = total_t
+                p.visited = True
+                t += p.cbt
+            else:
+                p.start_time.append(t)
+                p.end_time.append(t + self.qunt)
+                p.cbt = p.cbt - self.qunt
+                ps.appendleft(p)
+                if p.cbt == 0:
+                    p.waiting_time = p.start_time[0] - p.at
+                    p.total_time = p.end_time[-1] - p.at
+                    p.visited = True
+                t += self.qunt
+
     def __get_min_at_process(self) -> Process:
         value = 1000000000000000
         proc = None
@@ -128,6 +169,16 @@ class Scheduler:
             current_rpr = float(wt) / float(p.cbt)
             p.set_rpr(current_rpr)
 
+    def __update_if_any_new(self, ps: deque[Process], t: int) -> deque[Process]:
+        ps = ps
+        ps_tmp = self.__find_all_process_with_atleaset_t_at(t)
+        ps_tmp = sorted(ps_tmp, key=lambda k: k.at, reverse=True)
+        for p in ps_tmp:
+            if p not in ps:
+                ps.append(p)
+
+        return ps
+
     def __debug(self):
         for p in self.processes:
             print(p)
@@ -141,8 +192,24 @@ class Scheduler:
         plt.ylabel("Process")
 
         for p in self.processes:
-            plt.scatter(p.at, p.name, color='red', marker='x', )
+            plt.scatter(p.at, p.name, color='red', marker='x')
             plt.plot([p.start_time, p.end_time], [p.name, p.name])
+
+        msg = f"Average Waiting Time: '{self.avg_waiting_time}' and  Average Total Time: '{self.avg_total_time}'"
+        plt.figtext(0.5, 0.01, msg, wrap=True, horizontalalignment='center', fontsize=12)
+        plt.show()
+
+    def __make_pr_plot(self):
+        plt.figure(figsize=(16, 8))
+        plt.yticks(range(len(self.processes) + 1))
+        plt.xticks(range(200))
+        plt.xlabel("Time")
+        plt.ylabel("Process")
+
+        for p in self.processes:
+            plt.scatter(p.at, p.name, color='red', marker='x')
+            for i in range(len(p.start_time)):
+                plt.plot([p.start_time[i], p.end_time[i]], [p.name, p.name])
 
         msg = f"Average Waiting Time: '{self.avg_waiting_time}' and  Average Total Time: '{self.avg_total_time}'"
         plt.figtext(0.5, 0.01, msg, wrap=True, horizontalalignment='center', fontsize=12)

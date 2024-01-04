@@ -5,6 +5,7 @@ class Algo(str, Enum):
     fcfs = "FCFS"
     spn = "SPN"
     hrrn = "HRRN"
+    rr = "RR"
 
 
 class Process:
@@ -26,6 +27,10 @@ class Process:
 
     def set_rpr(self, rpr: float):
         self.rpr = rpr
+
+    def make_rr_process(self):
+        self.start_time = []
+        self.end_time = []
 
     def __repr__(self) -> str:
         return f"<P: {self.name}, st: {self.start_time}, end: {self.end_time}>"
