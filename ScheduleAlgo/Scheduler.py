@@ -6,6 +6,8 @@ from models import Algo, Process
 
 
 class Scheduler:
+    COLORS = []
+
     def __init__(self, algo: Algo, processes: list[Process], qunt: int = 10) -> None:
         self.algo = algo
         self.processes = processes
@@ -24,9 +26,11 @@ class Scheduler:
                 self.__hrrn()
             case Algo.rr:
                 self.__rr()
+            case Algo.srtf:
+                self.__srtf()
 
         self.__caluclate_avg()
-        if self.algo == Algo.rr: self.__make_pr_plot()
+        if self.algo == Algo.rr or self.algo == Algo.srtf: self.__make_pr_plot()
         else: self.__make_plot()
 
     def __fcfs(self):
@@ -101,6 +105,42 @@ class Scheduler:
                 t += 1
                 continue
 
+            p: Process = ps.pop()
+
+            if p.cbt <= self.qunt:
+                p.start_time.append(t)
+                p.end_time.append(t + p.cbt)
+                wait_t = p.start_time[0] - p.at
+                total_t = p.end_time[-1] - p.at
+                p.waiting_time = wait_t
+                p.total_time = total_t
+                p.visited = True
+                t += p.cbt
+            else:
+                p.start_time.append(t)
+                p.end_time.append(t + self.qunt)
+                p.cbt = p.cbt - self.qunt
+                ps.appendleft(p)
+                if p.cbt == 0:
+                    p.waiting_time = p.start_time[0] - p.at
+                    p.total_time = p.end_time[-1] - p.at
+                    p.visited = True
+                t += self.qunt
+
+    def __srtf(self):
+        for p in self.processes:
+            p.make_rr_process()
+
+        t = 0
+        ps: deque = deque(self.__find_all_process_with_atleaset_t_at(t))
+        ps = deque(sorted(ps, key=lambda k: k.at, reverse=True))
+        while self.__check_if_any_remain():
+            ps = self.__update_if_any_new(ps, t)
+            if len(ps) == 0:
+                t += 1
+                continue
+
+            ps = deque(sorted(ps, key=lambda k: k.cbt, reverse=True))
             p: Process = ps.pop()
 
             if p.cbt <= self.qunt:
@@ -209,7 +249,7 @@ class Scheduler:
         for p in self.processes:
             plt.scatter(p.at, p.name, color='red', marker='x')
             for i in range(len(p.start_time)):
-                plt.plot([p.start_time[i], p.end_time[i]], [p.name, p.name])
+                plt.plot([p.start_time[i], p.end_time[i]], [p.name, p.name], color=f"C{p.name}")
 
         msg = f"Average Waiting Time: '{self.avg_waiting_time}' and  Average Total Time: '{self.avg_total_time}'"
         plt.figtext(0.5, 0.01, msg, wrap=True, horizontalalignment='center', fontsize=12)

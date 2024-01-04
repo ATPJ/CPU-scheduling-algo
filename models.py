@@ -6,6 +6,7 @@ class Algo(str, Enum):
     spn = "SPN"
     hrrn = "HRRN"
     rr = "RR"
+    srtf = "SRTF"
 
 
 class Process:
