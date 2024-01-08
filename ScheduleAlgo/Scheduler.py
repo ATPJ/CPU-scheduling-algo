@@ -6,7 +6,6 @@ from models import Algo, Process
 
 
 class Scheduler:
-    COLORS = []
 
     def __init__(self, algo: Algo, processes: list[Process], qunt: int = 10) -> None:
         self.algo = algo
@@ -143,25 +142,19 @@ class Scheduler:
             ps = deque(sorted(ps, key=lambda k: k.cbt, reverse=True))
             p: Process = ps.pop()
 
-            if p.cbt <= self.qunt:
-                p.start_time.append(t)
-                p.end_time.append(t + p.cbt)
-                wait_t = p.start_time[0] - p.at
-                total_t = p.end_time[-1] - p.at
-                p.waiting_time = wait_t
-                p.total_time = total_t
+            p.start_time.append(t)
+            p.end_time.append(t + 1)
+            p.cbt -= 1
+            if p.cbt == 0:
+                for i in range(len(p.start_time) - 1):
+                    if i == 0:
+                        p.waiting_time += (p.start_time[i] - p.at)
+                    else:
+                        p.waiting_time += (p.start_time[i+1] - p.end_time[i])
+                p.total_time = p.end_time[-1] - p.at
                 p.visited = True
-                t += p.cbt
-            else:
-                p.start_time.append(t)
-                p.end_time.append(t + self.qunt)
-                p.cbt = p.cbt - self.qunt
-                ps.appendleft(p)
-                if p.cbt == 0:
-                    p.waiting_time = p.start_time[0] - p.at
-                    p.total_time = p.end_time[-1] - p.at
-                    p.visited = True
-                t += self.qunt
+
+            t += 1
 
     def __get_min_at_process(self) -> Process:
         value = 1000000000000000

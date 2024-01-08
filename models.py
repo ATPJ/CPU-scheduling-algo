@@ -17,8 +17,8 @@ class Process:
         self.visited = False
         self.start_time = None
         self.end_time = None
-        self.waiting_time = None
-        self.total_time = None
+        self.waiting_time = 0
+        self.total_time = 0
 
     def set_times(self, start_time, end_time, waiting_time, total_time):
         self.start_time = start_time
