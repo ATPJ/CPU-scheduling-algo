@@ -78,7 +78,9 @@ class Scheduler:
                 continue
 
             self.__calculate_rpr(ps, t)
-            ps = sorted(ps, key=lambda k: k.rpr, reverse=True)
+            ps = sorted(ps, key=lambda k: (k.rpr, k.cbt), reverse=True)
+            if len(ps) >= 2 and ps[0].rpr == ps[1].rpr:
+                ps = list(reversed(ps))
             p = ps[0]
             if last_p is None: start = p.at
             else: start = last_p.end_time
