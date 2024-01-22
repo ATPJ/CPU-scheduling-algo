@@ -21,11 +21,11 @@ python -m pip install -r requirements.txt
 ```
 
 Run the application:
-```python
-python main.py NumberOfProcesses AlgoType
+```bash
+python main.py plot NumberOfProcesses AlgoType
 ```
 
 Also you can see the the options with
-```python
+```bash
 python main.py --help
 ```
