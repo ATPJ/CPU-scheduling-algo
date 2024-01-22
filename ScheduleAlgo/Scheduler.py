@@ -15,7 +15,7 @@ class Scheduler:
         self.avg_total_time = 0
         self.qunt = qunt
 
-    def calculate(self):
+    def calculate(self, show_plot: bool = True):
         match self.algo:
             case Algo.fcfs:
                 self.__fcfs()
@@ -29,8 +29,10 @@ class Scheduler:
                 self.__srtf()
 
         self.__caluclate_avg()
-        if self.algo == Algo.rr or self.algo == Algo.srtf: self.__make_pr_plot()
-        else: self.__make_plot()
+
+        if show_plot:
+            if self.algo == Algo.rr or self.algo == Algo.srtf: self.__make_pr_plot()
+            else: self.__make_plot()
 
     def __fcfs(self):
         last_p: Process = None
@@ -221,6 +223,7 @@ class Scheduler:
     def __make_plot(self):
         # self.__debug()
         plt.figure(figsize=(12, 8))
+        plt.title(self.algo.value)
         plt.yticks(range(len(self.processes) + 1))
         plt.xticks(range(200), rotation=90)
         plt.xlabel("Time")
@@ -236,6 +239,7 @@ class Scheduler:
 
     def __make_pr_plot(self):
         plt.figure(figsize=(16, 8))
+        plt.title(self.algo.value)
         plt.yticks(range(len(self.processes) + 1))
         plt.xticks(range(200), rotation=90)
         plt.xlabel("Time")
