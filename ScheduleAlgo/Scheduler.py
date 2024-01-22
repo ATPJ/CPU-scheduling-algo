@@ -50,7 +50,7 @@ class Scheduler:
         t = 0
         while self.__check_if_any_remain():
             ps = self.__find_all_process_with_atleaset_t_at(t)
-            print(t, " and ", ps)
+            # print(t, " and ", ps)
             # ps = sorted(ps, key=lambda k: (k.cbt, k.at))
             if len(ps) == 0:
                 t += 1
@@ -222,13 +222,13 @@ class Scheduler:
         # self.__debug()
         plt.figure(figsize=(12, 8))
         plt.yticks(range(len(self.processes) + 1))
-        plt.xticks(range(200))
+        plt.xticks(range(200), rotation=90)
         plt.xlabel("Time")
         plt.ylabel("Process")
 
         for p in self.processes:
             plt.scatter(p.at, p.name, color='red', marker='x')
-            plt.plot([p.start_time, p.end_time], [p.name, p.name])
+            plt.plot([p.start_time, p.end_time], [p.name, p.name], lw=5)
 
         msg = f"Average Waiting Time: '{self.avg_waiting_time}' and  Average Total Time: '{self.avg_total_time}'"
         plt.figtext(0.5, 0.01, msg, wrap=True, horizontalalignment='center', fontsize=12)
@@ -237,14 +237,14 @@ class Scheduler:
     def __make_pr_plot(self):
         plt.figure(figsize=(16, 8))
         plt.yticks(range(len(self.processes) + 1))
-        plt.xticks(range(200))
+        plt.xticks(range(200), rotation=90)
         plt.xlabel("Time")
         plt.ylabel("Process")
 
         for p in self.processes:
             plt.scatter(p.at, p.name, color='red', marker='x')
             for i in range(len(p.start_time)):
-                plt.plot([p.start_time[i], p.end_time[i]], [p.name, p.name], color=f"C{p.name}")
+                plt.plot([p.start_time[i], p.end_time[i]], [p.name, p.name], lw=5, color=f"C{p.name}")
 
         msg = f"Average Waiting Time: '{self.avg_waiting_time}' and  Average Total Time: '{self.avg_total_time}'"
         plt.figtext(0.5, 0.01, msg, wrap=True, horizontalalignment='center', fontsize=12)
