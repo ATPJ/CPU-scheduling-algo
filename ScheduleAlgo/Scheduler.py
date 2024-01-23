@@ -67,7 +67,7 @@ class Scheduler:
             # for _ in range(len(ps)):
             p = self.__get_min_cbt_process(ps)
             if last_p is None: start = p.at
-            else: start = last_p.end_time
+            else: start = t
             end = start + p.cbt
             wait_t = start - p.at
             total_t = end - p.at
@@ -92,7 +92,7 @@ class Scheduler:
                 ps = list(reversed(ps))
             p = ps[0]
             if last_p is None: start = p.at
-            else: start = last_p.end_time
+            else: start = t
             end = start + p.cbt
             wait_t = start - p.at
             total_t = end - p.at
@@ -158,6 +158,9 @@ class Scheduler:
             ps = deque(sorted(ps, key=lambda k: k.cbt, reverse=True))
             p: Process = ps.pop()
 
+            if self.with_ctx and last_p and last_p.name != p.name:
+                t += self.ctx_t
+
             p.start_time.append(t)
             p.end_time.append(t + 1)
             p.cbt -= 1
@@ -171,8 +174,6 @@ class Scheduler:
                 p.visited = True
 
             t += 1
-            if last_p != p:
-                t += self.ctx_t
             last_p = p
 
     def __get_min_at_process(self) -> Process:
