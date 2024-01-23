@@ -1,5 +1,7 @@
 from models import Process, Algo
 
+from rich.table import Table
+from rich.console import Console
 
 def get_and_make_process(number: int) -> list[Process]:
     processes = []
@@ -21,12 +23,13 @@ def make_process_list_with_same_info(processes_info: list[tuple]) -> list[Proces
 
 
 def making_compare_table(data: dict):
-    print("    Algo Name    |    Average Waiting Time    |    Average Total Time    ")
-    print("-------------------------------------------------------------------------")
+    table = Table("Algo Name", "Average Waiting Time", "Average Total Time")
+
     for algo in (Algo.fcfs, Algo.spn, Algo.hrrn, Algo.rr, Algo.srtf):
-        formated_name = str(algo.value.zfill(4)).replace("0", " ") + (" "*5)
-        formated_avg_wt = str(data[algo]['avg_wt']).zfill(10).replace("0", " ") + (" "*10)
-        formated_avg_tt = str(data[algo]['avg_tt']).zfill(9).replace("0", " ") + (" "*9)
-        print("                 |                            |                          ")
-        print(f"    {formated_name}    |    {formated_avg_wt}    |    {formated_avg_tt}    ")
-        print("                 |                            |                          ")
+        formated_name = algo.value
+        formated_avg_wt = str(data[algo]['avg_wt'])
+        formated_avg_tt = str(data[algo]['avg_tt'])
+        table.add_row(formated_name, formated_avg_wt, formated_avg_tt)
+
+    console = Console()
+    console.print(table)
