@@ -7,13 +7,15 @@ from models import Algo, Process
 
 class Scheduler:
 
-    def __init__(self, algo: Algo, processes: list[Process], qunt: int = 10) -> None:
+    def __init__(self, algo: Algo, processes: list[Process], qunt: int = 10, ctx_t: int = 1, with_ctx: bool = False) -> None:
         self.algo = algo
         self.processes = processes
         self.N = len(processes)
         self.avg_waiting_time = 0
         self.avg_total_time = 0
         self.qunt = qunt
+        self.ctx_t = ctx_t
+        self.with_ctx = with_ctx
 
     def calculate(self, show_plot: bool = True):
         match self.algo:
@@ -39,7 +41,11 @@ class Scheduler:
         for _ in range(self.N):
             p = self.__get_min_at_process()
             if last_p is None: start = p.at
-            else: start = last_p.end_time
+            else:
+                if self.with_ctx:
+                    start = last_p.end_time + self.ctx_t
+                else:
+                    start = last_p.end_time
             end = start + p.cbt
             wait_t = start - p.at
             total_t = end - p.at
@@ -68,7 +74,8 @@ class Scheduler:
 
             p.set_times(start, end, wait_t, total_t)
             last_p = p
-            t = p.end_time
+            if self.with_ctx: t = p.end_time + self.ctx_t
+            else: t = p.end_time
 
     def __hrrn(self):
         last_p: Process = None
@@ -93,7 +100,8 @@ class Scheduler:
             p.set_times(start, end, wait_t, total_t)
             p.visited = True
             last_p = p
-            t = p.end_time
+            if self.with_ctx: t = p.end_time + self.ctx_t
+            else: t = p.end_time
 
     def __rr(self):
         for p in self.processes:
@@ -118,7 +126,8 @@ class Scheduler:
                 p.waiting_time = wait_t
                 p.total_time = total_t
                 p.visited = True
-                t += p.cbt
+                if self.with_ctx: t += p.cbt + self.ctx_t
+                else: t += p.cbt
             else:
                 p.start_time.append(t)
                 p.end_time.append(t + self.qunt)
@@ -128,9 +137,12 @@ class Scheduler:
                     p.waiting_time = p.start_time[0] - p.at
                     p.total_time = p.end_time[-1] - p.at
                     p.visited = True
-                t += self.qunt
+
+                if self.with_ctx: t += self.qunt + self.ctx_t
+                else: t += self.qunt
 
     def __srtf(self):
+        last_p: Process = None
         for p in self.processes:
             p.make_rr_process()
 
@@ -159,6 +171,9 @@ class Scheduler:
                 p.visited = True
 
             t += 1
+            if last_p != p:
+                t += self.ctx_t
+            last_p = p
 
     def __get_min_at_process(self) -> Process:
         value = 1000000000000000
@@ -222,7 +237,7 @@ class Scheduler:
 
     def __make_plot(self):
         # self.__debug()
-        plt.figure(figsize=(12, 8))
+        plt.figure(figsize=(20, 8))
         plt.title(self.algo.value)
         plt.yticks(range(len(self.processes) + 1))
         plt.xticks(range(200), rotation=90)
@@ -238,7 +253,7 @@ class Scheduler:
         plt.show()
 
     def __make_pr_plot(self):
-        plt.figure(figsize=(16, 8))
+        plt.figure(figsize=(20, 8))
         plt.title(self.algo.value)
         plt.yticks(range(len(self.processes) + 1))
         plt.xticks(range(200), rotation=90)
