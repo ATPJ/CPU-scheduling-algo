@@ -121,10 +121,15 @@ class Scheduler:
             if p.cbt <= self.qunt:
                 p.start_time.append(t)
                 p.end_time.append(t + p.cbt)
-                wait_t = p.start_time[0] - p.at
-                total_t = p.end_time[-1] - p.at
-                p.waiting_time = wait_t
-                p.total_time = total_t
+                if len(p.start_time) == 1:
+                    p.waiting_time = p.start_time[0] - p.at
+                else:
+                    for i in range(0, len(p.start_time)):
+                        if i == 0:
+                            p.waiting_time += (p.start_time[i] - p.at)
+                        else:
+                            p.waiting_time += (p.start_time[i] - p.end_time[i-1])
+                p.total_time = p.end_time[-1] - p.at
                 p.visited = True
                 if self.with_ctx: t += p.cbt + self.ctx_t
                 else: t += p.cbt
@@ -134,7 +139,14 @@ class Scheduler:
                 p.cbt = p.cbt - self.qunt
                 ps.appendleft(p)
                 if p.cbt == 0:
-                    p.waiting_time = p.start_time[0] - p.at
+                    if len(p.start_time) == 1:
+                        p.waiting_time = p.start_time[0] - p.at
+                    else:
+                        for i in range(0, len(p.start_time)):
+                            if i == 0:
+                                p.waiting_time += (p.start_time[i] - p.at)
+                            else:
+                                p.waiting_time += (p.start_time[i] - p.end_time[i-1])
                     p.total_time = p.end_time[-1] - p.at
                     p.visited = True
 
@@ -165,11 +177,11 @@ class Scheduler:
             p.end_time.append(t + 1)
             p.cbt -= 1
             if p.cbt == 0:
-                for i in range(len(p.start_time) - 1):
+                for i in range(len(p.start_time)):
                     if i == 0:
                         p.waiting_time += (p.start_time[i] - p.at)
                     else:
-                        p.waiting_time += (p.start_time[i+1] - p.end_time[i])
+                        p.waiting_time += (p.start_time[i] - p.end_time[i-1])
                 p.total_time = p.end_time[-1] - p.at
                 p.visited = True
 
